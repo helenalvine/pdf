@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA do Zero — Lê Rocha</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #E1306C;
+    --pink-light: #FCE8EF;
+    --pink-mid: #f472a0;
+    --dark: #0d0d0d;
+    --dark2: #1a1a1a;
+    --gray: #888;
+    --light: #f9f4f6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--dark);
+    color: #fff;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    width: 700px;
+    height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(225,48,108,0.18) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-block;
+    border: 1px solid rgba(225,48,108,0.4);
+    color: var(--pink-mid);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.4rem 1.1rem;
+    border-radius: 100px;
+    margin-bottom: 2rem;
+    background: rgba(225,48,108,0.06);
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.08;
+    max-width: 820px;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--pink);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    color: #bbb;
+    font-weight: 300;
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    background: var(--pink);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 1.1rem 2.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(225,48,108,0.4);
+  }
+
+  .btn-primary:hover::before { opacity: 1; }
+
+  .price-note {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .price-note strong {
+    color: #aaa;
+  }
+
+  /* ── DOR ── */
+  .section-dor {
+    background: var(--dark2);
+    padding: 6rem 2rem;
+    position: relative;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 1.2rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--pink);
+  }
+
+  .dor-list {
+    list-style: none;
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .dor-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    font-size: 1.05rem;
+    color: #ccc;
+    line-height: 1.6;
+    padding: 1.2rem 1.5rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    transition: border-color 0.2s;
+  }
+
+  .dor-list li:hover {
+    border-color: rgba(225,48,108,0.2);
+  }
+
+  .dor-list li::before {
+    content: '—';
+    color: var(--pink);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── REVELAÇÃO ── */
+  .section-revelacao {
+    background: var(--pink);
+    padding: 6rem 2rem;
+    text-align: center;
+  }
+
+  .revelacao-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.3;
+    max-width: 720px;
+    margin: 0 auto 1.5rem;
+    color: #fff;
+  }
+
+  .revelacao-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.75);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* ── HISTÓRIA ── */
+  .section-historia {
+    padding: 7rem 2rem;
+    background: var(--dark);
+  }
+
+  .historia-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .historia-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 1.2rem;
+  }
+
+  .historia-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 1.8rem;
+  }
+
+  .historia-title em {
+    font-style: italic;
+    color: var(--pink);
+  }
+
+  .historia-body {
+    color: #bbb;
+    line-height: 1.8;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .historia-card {
+    background: var(--dark2);
+    border: 1px solid rgba(225,48,108,0.15);
+    border-left: 3px solid var(--pink);
+    padding: 2rem;
+    border-radius: 4px;
+  }
+
+  .historia-card-year {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 0.6rem;
+  }
+
+  .historia-card-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: #ddd;
+    line-height: 1.6;
+  }
+
+  /* ── O QUE VOCÊ VAI APRENDER ── */
+  .section-modulos {
+    background: var(--dark2);
+    padding: 7rem 2rem;
+  }
+
+  .modulos-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .modulos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .modulo-card {
+    background: var(--dark);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 2rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .modulo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--pink);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .modulo-card:hover {
+    border-color: rgba(225,48,108,0.2);
+    transform: translateY(-4px);
+  }
+
+  .modulo-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .modulo-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 0.8rem;
+  }
+
+  .modulo-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    line-height: 1.3;
+  }
+
+  .modulo-desc {
+    font-size: 0.88rem;
+    color: #888;
+    line-height: 1.6;
+  }
+
+  /* ── PARA QUEM ── */
+  .section-paraquem {
+    padding: 7rem 2rem;
+    background: var(--dark);
+  }
+
+  .paraquem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+  }
+
+  .paraquem-col h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: #ddd;
+  }
+
+  .paraquem-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .paraquem-list li {
+    font-size: 0.95rem;
+    color: #bbb;
+    line-height: 1.5;
+    padding-left: 1.4rem;
+    position: relative;
+  }
+
+  .paraquem-list.sim li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--pink);
+    font-weight: 700;
+  }
+
+  .paraquem-list.nao li::before {
+    content: '✗';
+    position: absolute;
+    left: 0;
+    color: #555;
+    font-weight: 700;
+  }
+
+  /* ── CTA FINAL ── */
+  .section-cta {
+    background: var(--dark2);
+    padding: 8rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-cta::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(225,48,108,0.12) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .cta-price {
+    font-size: 0.85rem;
+    color: #666;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .cta-valor {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .cta-valor span {
+    color: var(--pink);
+  }
+
+  .cta-desc {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 3rem;
+  }
+
+  .cta-garantia {
+    margin-top: 2rem;
+    font-size: 0.82rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .cta-garantia::before {
+    content: '🔒';
+    font-size: 0.9rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.8rem;
+    color: #444;
+  }
+
+  footer a {
+    color: #555;
+    text-decoration: none;
+  }
+
+  footer a:hover { color: var(--pink); }
+
+  /* ── LINGUAGEM ── */
+  .section-linguagem {
+    background: var(--dark);
+    padding: 7rem 2rem;
+  }
+
+  .linguagem-intro {
+    color: #bbb;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    max-width: 620px;
+    margin-bottom: 3rem;
+  }
+
+  .linguagem-intro strong {
+    color: #fff;
+  }
+
+  .siglas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .sigla-card {
+    background: var(--dark2);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 4px;
+    padding: 1.4rem;
+    transition: border-color 0.2s;
+  }
+
+  .sigla-card:hover {
+    border-color: rgba(225,48,108,0.25);
+  }
+
+  .sigla-termo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--pink);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  .sigla-def {
+    font-size: 0.85rem;
+    color: #888;
+    line-height: 1.5;
+  }
+
+  .sigla-def strong {
+    color: #ccc;
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.2rem;
+  }
+
+  .linguagem-quote {
+    background: rgba(225,48,108,0.06);
+    border-left: 3px solid var(--pink);
+    padding: 1.8rem 2rem;
+    border-radius: 0 4px 4px 0;
+    max-width: 620px;
+  }
+
+  .linguagem-quote p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    color: #ddd;
+    line-height: 1.7;
+  }
+
+  .linguagem-quote cite {
+    display: block;
+    margin-top: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--pink);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 48px;
+    height: 2px;
+    background: var(--pink);
+    margin: 1.5rem 0;
+  }
+
+  .divider.center { margin: 1.5rem auto; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 720px) {
+    .historia-grid,
+    .paraquem-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .modulos-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <div class="badge">PDF completo · $9,90</div>
+
+  <h1 class="hero-title">
+    IA não é difícil.<br>
+    É <em>mal explicada.</em>
+  </h1>
+
+  <p class="hero-subtitle">
+    Um guia feito por quem não nasceu no digital — pra quem também não nasceu. Aprenda a usar inteligência artificial do zero, em linguagem de gente.
+  </p>
+
+  <div class="hero-cta">
+    <a href="https://pay.kiwify.com.br/qLzScbf" class="btn-primary">
+      Quero o PDF por $9,90 →
+    </a>
+    <p class="price-note">Acesso imediato · <strong>Pagamento via Pix, cartão ou boleto</strong></p>
+  </div>
+</section>
+
+<!-- ══ DOR ══ -->
+<section class="section-dor">
+  <div class="container reveal">
+    <p class="section-label">Isso soa familiar?</p>
+    <h2 class="section-title">
+      Você já tentou entrar no mundo digital.<br>
+      <em>E travou.</em>
+    </h2>
+    <div class="divider"></div>
+
+    <ul class="dor-list">
+      <li>Abre o ChatGPT, fica olhando pra tela em branco e não sabe o que digitar</li>
+      <li>Vê todo mundo falando de IA no Instagram mas parece que é pra outro tipo de pessoa</li>
+      <li>Tentou uma vez, a resposta não prestou, fechou e nunca mais voltou</li>
+      <li>Sente que chegou tarde demais — que o trem já partiu</li>
+      <li>Pensa "isso não é pra mim, eu não tenho cabeça pra tecnologia"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ══ REVELAÇÃO ══ -->
+<section class="section-revelacao">
+  <blockquote class="revelacao-quote">
+    "Você não é burra.<br>Nunca te explicaram do jeito certo."
+  </blockquote>
+  <p class="revelacao-sub">
+    A IA é simples. O problema é que quem ensina já sabe tudo — e esqueceu como é não saber nada. Esse PDF foi feito diferente.
+  </p>
+</section>
+
+<!-- ══ LINGUAGEM ══ -->
+<section class="section-linguagem">
+  <div class="container reveal">
+    <p class="section-label">Por que esse PDF é diferente</p>
+    <h2 class="section-title">
+      Lembra da primeira vez que você leu<br>
+      <em>"otimize seu CPM no BM via ADs"?</em>
+    </h2>
+    <div class="divider"></div>
+
+    <p class="linguagem-intro">
+      Quando comecei no digital, eu passava <strong>horas pesquisando o que as palavras significavam</strong> antes de conseguir entender uma única frase do conteúdo. Lead. CTA. CPM. BM. ADs. Funil. Para quem já estava dentro, era óbvio. Para mim, era outro idioma.
+      <br><br>
+      Esse PDF não faz isso com você. <strong>Cada termo é explicado no momento em que aparece.</strong> Sem você precisar pausar, pesquisar e perder o fio.
+    </p>
+
+    <div class="siglas-grid">
+      <div class="sigla-card">
+        <p class="sigla-termo">Lead</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "capture leads qualificados"</p>
+        <p class="sigla-def">Uma pessoa que demonstrou interesse no que você oferece — deixou o e-mail ou o WhatsApp.</p>
+      </div>
+      <div class="sigla-card">
+        <p class="sigla-termo">CTA</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "insira um CTA claro"</p>
+        <p class="sigla-def">Call to Action — o botão ou a frase que pede pra pessoa fazer algo. Tipo "clique aqui" ou "compre agora".</p>
+      </div>
+      <div class="sigla-card">
+        <p class="sigla-termo">BM</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "suba isso no BM"</p>
+        <p class="sigla-def">Business Manager — o painel do Facebook onde você gerencia seus anúncios e páginas.</p>
+      </div>
+      <div class="sigla-card">
+        <p class="sigla-termo">ADs</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "rode ADs no Meta"</p>
+        <p class="sigla-def">Anúncios pagos. "Rodar ADs" significa pagar para o Facebook ou Instagram mostrar seu conteúdo para mais pessoas.</p>
+      </div>
+      <div class="sigla-card">
+        <p class="sigla-termo">CPM</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "seu CPM está alto"</p>
+        <p class="sigla-def">Custo por mil visualizações do seu anúncio. Quanto você paga pra mil pessoas verem o que você postou.</p>
+      </div>
+      <div class="sigla-card">
+        <p class="sigla-termo">Funil</p>
+        <p class="sigla-def"><strong>O que dizem:</strong> "monte um funil de vendas"</p>
+        <p class="sigla-def">O caminho que uma pessoa faz desde te descobrir até comprar de você. Começa largo, vai afunilando.</p>
+      </div>
+    </div>
+
+    <div class="linguagem-quote">
+      <p>"Perdi tempo demais lendo e pesquisando o que as palavras significavam — porque pra eles era comum, mas pra mim era difícil. Não quero que você passe pelo mesmo."</p>
+      <cite>— Lê Rocha</cite>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HISTÓRIA ══ -->
+<section class="section-historia">
+  <div class="container">
+    <div class="historia-grid">
+      <div class="reveal">
+        <p class="historia-label">Quem é Lê Rocha</p>
+        <h2 class="historia-title">
+          Eu fui faxineira nos EUA.<br>
+          Hoje crio <em>estratégias digitais.</em>
+        </h2>
+        <div class="divider"></div>
+        <div class="historia-body">
+          <p>Até 2017, eu era servidora federal na radioterapia. Computador era só pra planilha e Word. Básico mesmo.</p>
+          <p>Quando vim pros Estados Unidos, precisei aprender sobre o mercado americano. Fui buscar como conseguir clientes pra faxina — e caí numa página sobre escrita persuasiva.</p>
+          <p>Ali começou tudo. Aprendi copywriting, marketing digital, estratégia, lançamentos. Me especializei em criar narrativas para produtos e eventos ao vivo. Lancei um rapaz no ramo de limpeza de casas aqui nos EUA.</p>
+          <p><strong style="color:#fff">E nunca mais parei de estudar.</strong></p>
+          <p>Hoje ensino o que aprendi — do jeito que eu precisava ter aprendido. Sem rodeios, sem jargão, sem te fazer sentir burra.</p>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay: 0.15s">
+        <div class="historia-card" style="margin-bottom: 1.5rem">
+          <p class="historia-card-year">Antes — 2017</p>
+          <p class="historia-card-text">"Nunca tinha usado computador pra trabalhar. Não sabia que existia marketing digital."</p>
+        </div>
+        <div class="historia-card" style="margin-bottom: 1.5rem">
+          <p class="historia-card-year">A virada</p>
+          <p class="historia-card-text">"Fui procurar cliente pra faxina. Acabei numa página de copywriting. E minha vida mudou."</p>
+        </div>
+        <div class="historia-card">
+          <p class="historia-card-year">Hoje</p>
+          <p class="historia-card-text">"Especialista em narrativas, lançamentos e estratégia digital — ensinando do jeito que eu precisei aprender."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MÓDULOS ══ -->
+<section class="section-modulos">
+  <div class="container">
+    <div class="modulos-header reveal">
+      <p class="section-label">O que está dentro do PDF</p>
+      <h2 class="section-title">5 módulos. Do zero ao funcionando.</h2>
+      <div class="divider center"></div>
+      <p style="color:#888; max-width:500px; margin: 0 auto; line-height:1.7; font-size:0.95rem">
+        Cada módulo foi escrito pra você aplicar no mesmo dia que ler. Sem depender de ninguém.
+      </p>
+    </div>
+
+    <div class="modulos-grid">
+      <div class="modulo-card reveal">
+        <p class="modulo-num">Módulo 01</p>
+        <h3 class="modulo-title">Abrindo o Claude pela primeira vez</h3>
+        <p class="modulo-desc">Como criar conta, entender a tela e dar o primeiro passo — sem travar.</p>
+      </div>
+
+      <div class="modulo-card reveal" style="transition-delay:0.1s">
+        <p class="modulo-num">Módulo 02</p>
+        <h3 class="modulo-title">Como pedir do jeito certo</h3>
+        <p class="modulo-desc">A fórmula simples que faz a IA responder do jeito que você precisa — com exemplos certos e errados lado a lado.</p>
+      </div>
+
+      <div class="modulo-card reveal" style="transition-delay:0.2s">
+        <p class="modulo-num">Módulo 03</p>
+        <h3 class="modulo-title">Automatizando e-mails com IA</h3>
+        <p class="modulo-desc">Modelos prontos, respostas em segundos. Você nunca mais vai perder tempo escrevendo e-mail do zero.</p>
+      </div>
+
+      <div class="modulo-card reveal" style="transition-delay:0.3s">
+        <p class="modulo-num">Módulo 04</p>
+        <h3 class="modulo-title">WhatsApp com IA automática</h3>
+        <p class="modulo-desc">Do WhatsApp Business ao ManyChat: como fazer seu celular responder clientes sozinho — enquanto você dorme.</p>
+      </div>
+
+      <div class="modulo-card reveal" style="transition-delay:0.4s">
+        <p class="modulo-num">Módulo 05</p>
+        <h3 class="modulo-title">Seu primeiro funil de vendas</h3>
+        <p class="modulo-desc">Como criar a estrutura básica pra capturar contatos e vender — com ferramentas gratuitas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PARA QUEM ══ -->
+<section class="section-paraquem">
+  <div class="container reveal">
+    <p class="section-label">Pra quem é esse PDF?</p>
+    <h2 class="section-title">Seja honesta com você mesma.</h2>
+    <div class="divider"></div>
+
+    <div class="paraquem-grid">
+      <div class="paraquem-col">
+        <h3>✦ É pra você se…</h3>
+        <ul class="paraquem-list sim">
+          <li>Tem mais de 30 anos e sente que ficou pra trás no digital</li>
+          <li>Já tentou usar IA mas não entendeu o que fazer</li>
+          <li>Quer economizar tempo no trabalho ou em casa</li>
+          <li>Sonha em gerar renda extra mas não sabe por onde começar</li>
+          <li>Aprende melhor com linguagem simples, sem jargão</li>
+        </ul>
+      </div>
+
+      <div class="paraquem-col">
+        <h3 style="color:#555">Não é pra você se…</h3>
+        <ul class="paraquem-list nao">
+          <li>Você já usa IA todo dia e quer algo avançado</li>
+          <li>Está buscando programação ou código</li>
+          <li>Quer resultados sem leitura e sem aplicação</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA FINAL ══ -->
+<section class="section-cta">
+  <div class="container reveal">
+    <p class="cta-price">Investimento único</p>
+    <p class="cta-valor"><span>$</span>9,90</p>
+    <p class="cta-desc">PDF completo · Acesso imediato · Sem mensalidade</p>
+
+    <a href="https://pay.kiwify.com.br/qLzScbf" class="btn-primary" style="font-size:1.1rem; padding: 1.3rem 3.5rem">
+      Quero começar agora →
+    </a>
+
+    <p class="cta-garantia">
+      Garantia de 7 dias. Não gostou, devolvemos tudo. Sem burocracia.
+    </p>
+
+    <p style="margin-top: 3rem; font-family: 'Playfair Display', serif; font-style:italic; font-size:1.1rem; color:#555; max-width:480px; margin-left:auto; margin-right:auto; line-height:1.6">
+      "Você não ficou pra trás.<br>Só ninguém te ensinou ainda."
+    </p>
+    <p style="margin-top:0.5rem; font-size:0.82rem; color:#444">— Lê Rocha</p>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p>© 2025 Lê Rocha · <a href="/cdn-cgi/l/email-protection#62010d0c1603160d220e07100d010a034c010d0f"><span class="__cf_email__" data-cfemail="afccc0c1dbcedbc0efc3caddc0ccc7ce81ccc0c2">[email&#160;protected]</span></a></p>
+  <p style="margin-top:0.5rem">Dúvidas? Me chama no Instagram <a href="https://instagram.com/lerocha" target="_blank">@lerocha</a></p>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((
